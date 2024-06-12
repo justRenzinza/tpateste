@@ -100,22 +100,22 @@ public class Aplicativo {
 
     public void disciplinasCursadas() {
         Scanner scanner = new Scanner(System.in);
-    
+11
         try {
             System.out.println("Digite a matrícula do aluno:");
             int matricula = scanner.nextInt();
             Aluno aluno = new Aluno(matricula, ""); // Criando um objeto aluno apenas com a matrícula para pesquisa
-    
+
             System.out.println("Digite o código da disciplina:");
             int codigoDisciplina = scanner.nextInt();
             Disciplina disciplina = new Disciplina(codigoDisciplina, "", 0); // Criando um objeto disciplina apenas com o código para pesquisa
-    
+
             Aluno alunoEncontrado = alunos.pesquisar(aluno);
             Disciplina disciplinaEncontrada = disciplinas.pesquisar(disciplina);
-    
+
             if (alunoEncontrado != null && disciplinaEncontrada != null) {
                 boolean cursouPreRequisitos = true;
-    
+
                 // Verifica se o aluno cursou todos os pré-requisitos da disciplina
                 for (Disciplina preRequisito : disciplinaEncontrada.getPreRequisitos()) {
                     boolean cursouPreRequisito = false;
@@ -130,7 +130,7 @@ public class Aplicativo {
                         System.out.println("O aluno não cursou o pré-requisito: " + preRequisito.getNome());
                     }
                 }
-    
+
                 // Se o aluno cursou todos os pré-requisitos, registra que ele cursou a disciplina
                 if (cursouPreRequisitos) {
                     System.out.println("Aluno cursou a disciplina " + disciplinaEncontrada.getNome() + " registrada com sucesso!");
@@ -305,6 +305,10 @@ public void excluirAlunoPorMatricula() {
             System.out.println("1 - Cadastrar Aluno");
             System.out.println("2 - Cadastrar Disciplina");
             System.out.println("3 - Cadastrar pré-requisito");
+            System.out.println("4 - Verificar disciplinas cursadas por aluno");
+            System.out.println("5 - Consultar aluno por nome");
+            System.out.println("6 - Consultar aluno por matrícula");
+            System.out.println("7 - Excluir aluno por matrícula");
             System.out.println("0 - Sair");
             System.out.println("Digite sua opção:");
             String opcao = s.nextLine();
@@ -314,14 +318,23 @@ public void excluirAlunoPorMatricula() {
                 CadastrarDisciplina();
             } else if (opcao.equals("3")) {
                 CadastrarPreRequisito();
+            } else if (opcao.equals("4")) {
+                disciplinasCursadas();
+            } else if (opcao.equals("5")) {
+                consultarAlunoPorNome();
+            } else if (opcao.equals("6")) {
+                consultarAlunoPorMatricula();
+            } else if (opcao.equals("7")) {
+                excluirAlunoPorMatricula();
             } else if (opcao.equals("0")) {
                 System.out.println("Obrigado por usar o sistema!");
-                break;
+                return;
             } else {
                 System.out.println("Opção inválida, por favor digite novamente.");
             }
         }
     }
+
 
     public static void main(String[] args) {
         Aplicativo app = new Aplicativo();
