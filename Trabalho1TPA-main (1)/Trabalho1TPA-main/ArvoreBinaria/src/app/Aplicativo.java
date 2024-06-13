@@ -1,20 +1,16 @@
 package app;
 
 import lib.ArvoreBinaria;
-import lib.IArvoreBinaria;
-import lib.No;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Scanner;
 import java.util.Stack;
+
 public class Aplicativo {
-    ArvoreBinaria<Aluno> alunos = new ArvoreBinaria<Aluno>(new ComparadorAlunoPorMatricula());
+    ArvoreBinaria<Aluno> alunos = new ArvoreBinaria<>(new ComparadorAlunoPorMatricula());
     ArvoreBinaria<Disciplina> disciplinas = new ArvoreBinaria<>(new ComparadorDisciplina());
 
     public void CadastrarAluno() {
         Scanner cadAluno = new Scanner(System.in);
-
         try {
             System.out.println("Digite o nome do aluno: ");
             String nomeAluno = cadAluno.nextLine();
@@ -30,7 +26,6 @@ public class Aplicativo {
 
     public void CadastrarDisciplina() {
         Scanner cadDisciplina = new Scanner(System.in);
-
         try {
             System.out.println("Digite o nome da disciplina:");
             String nomeDisciplina = cadDisciplina.nextLine();
@@ -48,11 +43,9 @@ public class Aplicativo {
 
     public void CadastrarPreRequisito() {
         Scanner disciplinaScanner = new Scanner(System.in);
-
         while (true) {
             System.out.println("Disciplinas cadastradas: \n");
             System.out.println(disciplinas.caminharEmOrdem());
-
             try {
                 Disciplina disciplinaEscolhida = null;
                 while (disciplinaEscolhida == null) {
@@ -66,7 +59,6 @@ public class Aplicativo {
                         System.out.println("A disciplina escolhida não foi encontrada. Por favor, insira um código válido.");
                     }
                 }
-
                 Disciplina preRequisito = null;
                 while (preRequisito == null) {
                     System.out.println("Digite o código da disciplina que deseja adicionar como pré-requisito (ou 0 para voltar ao menu): ");
@@ -79,7 +71,6 @@ public class Aplicativo {
                         System.out.println("A disciplina pré-requisito não foi encontrada. Por favor, insira um código válido.");
                     }
                 }
-
                 if (disciplinaEscolhida != null && preRequisito != null) {
                     if (disciplinaEscolhida.getPreRequisitos().contains(preRequisito)) {
                         System.out.println("A disciplina escolhida já possui esse pré-requisito!");
@@ -100,26 +91,21 @@ public class Aplicativo {
 
     public void disciplinasCursadas() {
         Scanner scanner = new Scanner(System.in);
-11
         try {
             System.out.println("Digite a matrícula do aluno:");
             int matricula = scanner.nextInt();
             Aluno aluno = new Aluno(matricula, ""); // Criando um objeto aluno apenas com a matrícula para pesquisa
-
             System.out.println("Digite o código da disciplina:");
             int codigoDisciplina = scanner.nextInt();
             Disciplina disciplina = new Disciplina(codigoDisciplina, "", 0); // Criando um objeto disciplina apenas com o código para pesquisa
-
             Aluno alunoEncontrado = alunos.pesquisar(aluno);
             Disciplina disciplinaEncontrada = disciplinas.pesquisar(disciplina);
-
             if (alunoEncontrado != null && disciplinaEncontrada != null) {
                 boolean cursouPreRequisitos = true;
-
                 // Verifica se o aluno cursou todos os pré-requisitos da disciplina
                 for (Disciplina preRequisito : disciplinaEncontrada.getPreRequisitos()) {
                     boolean cursouPreRequisito = false;
-                    for (Disciplina disciplinaCursada : alunoEncontrado.getDisciplinasCursadas()) {
+                    for (Disciplina disciplinaCursada : alunoEncontrado.getDiscCursadas()) {
                         if (disciplinaCursada.equals(preRequisito)) {
                             cursouPreRequisito = true;
                             break;
@@ -130,175 +116,74 @@ public class Aplicativo {
                         System.out.println("O aluno não cursou o pré-requisito: " + preRequisito.getNome());
                     }
                 }
-
                 // Se o aluno cursou todos os pré-requisitos, registra que ele cursou a disciplina
                 if (cursouPreRequisitos) {
-                    System.out.println("Aluno cursou a disciplina " + disciplinaEncontrada.getNome() + " registrada com sucesso!");
-                } else {
-                    System.out.println("O aluno não cursou todas as disciplinas pré-requisito.");
+                    alunoEncontrado.addDiscCursada(disciplinaEncontrada);
+                    System.out.println("Disciplina adicionada às disciplinas cursadas pelo aluno.");
                 }
             } else {
-                System.out.println("Aluno ou disciplina não encontrada.");
+                System.out.println("Aluno ou disciplina não encontrados.");
             }
         } catch (Exception e) {
-            System.out.println("Erro ao processar a operação.");
+            System.out.println("Erro ao registrar disciplinas cursadas.");
         }
     }
 
     public void consultarAlunoPorNome() {
-    Scanner scanner = new Scanner(System.in);
-
-    try {
-        System.out.println("Digite o nome do aluno:");
-        String nomeAluno = scanner.nextLine();
-
-        boolean encontrado = false;
-        Stack<No<Aluno>> pilha = new Stack<>();
-        
-        // Obtendo a raiz da árvore de alunos usando um método na classe ArvoreBinaria
-        No<Aluno> atual = alunos.getRaiz();
-
-        while (atual != null || !pilha.isEmpty()) {
-            while (atual != null) {
-                pilha.push(atual);
-                atual = atual.getFilhoEsquerda(); // Acessamos o filho à esquerda
+        Scanner alunoNomeScanner = new Scanner(System.in);
+        System.out.println("Digite o nome do aluno a ser consultado: ");
+        String nomeAluno = alunoNomeScanner.nextLine();
+        Stack<Aluno> resultado = new Stack<>();
+        alunos.emOrdem(aluno -> {
+            if (aluno.getNome().equalsIgnoreCase(nomeAluno)) {
+                resultado.add(aluno);
             }
-
-            atual = pilha.pop();
-            if (atual.getValor().getNome().equalsIgnoreCase(nomeAluno)) {
-                encontrado = true;
-                System.out.println("Matrícula: " + atual.getValor().getMatricula());
-                System.out.println("Nome: " + atual.getValor().getNome());
-                System.out.println("Disciplinas cursadas:");
-
-                // Convertendo o array de Disciplina para List<Disciplina>
-                List<Disciplina> disciplinasCursadas = Arrays.asList(atual.getValor().getDisciplinasCursadas());
-
-                if (disciplinasCursadas.isEmpty()) {
-                    System.out.println("Nenhuma disciplina cursada.");
-                } else {
-                    for (Disciplina disciplina : disciplinasCursadas) {
-                        System.out.println("Código: " + disciplina.getCodigo() + ", Nome: " + disciplina.getNome());
-                    }
+        });
+        if (resultado.isEmpty()) {
+            System.out.println("Aluno não encontrado.");
+        } else {
+            for (Aluno aluno : resultado) {
+                System.out.println("Matrícula: " + aluno.getMatricula());
+                System.out.println("Nome: " + aluno.getNome());
+                System.out.println("Disciplinas Cursadas: ");
+                for (Disciplina disciplina : aluno.getDisciplinasCursadas()) {
+                    System.out.println(disciplina);
                 }
-
-                break;
             }
-
-            atual = atual.getFilhoDireita(); // Acessamos o filho à direita
         }
+    }
 
-        if (!encontrado) {
+    public void consultarAlunoPorMatricula() {
+        Scanner alunoMatriculaScanner = new Scanner(System.in);
+        System.out.println("Digite a matrícula do aluno a ser consultado: ");
+        int matriculaAluno = alunoMatriculaScanner.nextInt();
+        Aluno aluno = alunos.pesquisar(new Aluno(matriculaAluno, ""));
+        if (aluno == null) {
+            System.out.println("Aluno não encontrado.");
+        } else {
+            System.out.println("Matrícula: " + aluno.getMatricula());
+            System.out.println("Nome: " + aluno.getNome());
+            System.out.println("Disciplinas Cursadas: ");
+            for (Disciplina disciplina : aluno.getDisciplinasCursadas()) {
+                System.out.println(disciplina);
+            }
+        }
+    }
+
+    public void removerAluno() {
+        Scanner remAluno = new Scanner(System.in);
+        System.out.println("Digite a matrícula do aluno a ser removido:");
+        int matRemAluno = remAluno.nextInt();
+        Aluno alunoRemover = alunos.pesquisar(new Aluno(matRemAluno, ""));
+        if (alunoRemover != null) {
+            alunos.remover(alunoRemover);
+            System.out.println("Aluno removido com sucesso!");
+        } else {
             System.out.println("Aluno não encontrado.");
         }
-    } catch (Exception e) {
-        System.out.println("Erro ao processar a operação.");
     }
-}
 
-public void consultarAlunoPorMatricula() {
-    Scanner scanner = new Scanner(System.in);
-
-    try {
-        System.out.println("Digite a matrícula do aluno:");
-        int matriculaAluno = scanner.nextInt();
-
-        boolean encontrado = false;
-        Stack<No<Aluno>> pilha = new Stack<>();
-
-        // Obtendo a raiz da árvore de alunos usando o método getRaiz()
-        No<Aluno> atual = alunos.getRaiz();
-
-        while (atual != null || !pilha.isEmpty()) {
-            while (atual != null) {
-                pilha.push(atual);
-                atual = atual.getFilhoEsquerda(); // Acessamos o filho à esquerda
-            }
-
-            atual = pilha.pop();
-            if (atual.getValor().getMatricula() == matriculaAluno) {
-                encontrado = true;
-                System.out.println("Matrícula: " + atual.getValor().getMatricula());
-                System.out.println("Nome: " + atual.getValor().getNome());
-                System.out.println("Disciplinas cursadas:");
-
-                // Convertendo o array de Disciplina para List<Disciplina>
-                List<Disciplina> disciplinasCursadas = Arrays.asList(atual.getValor().getDisciplinasCursadas());
-
-                if (disciplinasCursadas.isEmpty()) {
-                    System.out.println("Nenhuma disciplina cursada.");
-                } else {
-                    for (Disciplina disciplina : disciplinasCursadas) {
-                        System.out.println("Código: " + disciplina.getCodigo() + ", Nome: " + disciplina.getNome());
-                    }
-                }
-
-                break;
-            }
-
-            atual = atual.getFilhoDireita(); // Acessamos o filho à direita
-        }
-
-        if (!encontrado) {
-            System.out.println("Aluno com matrícula " + matriculaAluno + " não encontrado.");
-        }
-    } catch (Exception e) {
-        System.out.println("Erro ao processar a operação.");
-    }
-}
-
-public void excluirAlunoPorMatricula() {
-    Scanner scanner = new Scanner(System.in);
-
-    try {
-        System.out.println("Digite a matrícula do aluno a ser excluído:");
-        int matriculaAluno = scanner.nextInt();
-
-        boolean encontrado = false;
-        Stack<No<Aluno>> pilha = new Stack<>();
-
-        // Obtendo a raiz da árvore de alunos usando o método getRaiz()
-        No<Aluno> atual = alunos.getRaiz();
-        No<Aluno> pai = null;
-
-        while (atual != null || !pilha.isEmpty()) {
-            while (atual != null) {
-                pilha.push(atual);
-                pai = atual; // Mantemos uma referência ao pai do nó atual
-                atual = atual.getFilhoEsquerda(); // Acessamos o filho à esquerda
-            }
-
-            atual = pilha.pop();
-            if (atual.getValor().getMatricula() == matriculaAluno) {
-                encontrado = true;
-                // Verificamos se o nó atual é a raiz da árvore
-                if (atual == alunos.getRaiz()) {
-                    // Se for, removemos a raiz e ajustamos a árvore
-                    alunos.remover(atual.getValor());
-                } else {
-                    // Caso contrário, removemos o nó do pai
-                    if (pai.getFilhoEsquerda() == atual) {
-                        pai.setFilhoEsquerda(null);
-                    } else {
-                        pai.setFilhoDireita(null);
-                    }
-                }
-                System.out.println("Aluno removido com sucesso.");
-                break;
-            }
-
-            pai = atual; // Atualizamos o pai antes de acessar o próximo nó
-            atual = atual.getFilhoDireita(); // Acessamos o filho à direita
-        }
-
-        if (!encontrado) {
-            System.out.println("Aluno com matrícula " + matriculaAluno + " não encontrado.");
-        }
-    } catch (Exception e) {
-        System.out.println("Erro ao processar a operação.");
-    }
-}
-
+// CÓDIGO PADRÃO
     public void menu() {
         Scanner s = new Scanner(System.in);
         while (true) {
@@ -325,7 +210,7 @@ public void excluirAlunoPorMatricula() {
             } else if (opcao.equals("6")) {
                 consultarAlunoPorMatricula();
             } else if (opcao.equals("7")) {
-                excluirAlunoPorMatricula();
+                removerAluno();
             } else if (opcao.equals("0")) {
                 System.out.println("Obrigado por usar o sistema!");
                 return;
@@ -341,3 +226,233 @@ public void excluirAlunoPorMatricula() {
         app.menu();
     }
 }
+
+// CÓDIGO COM LEITURA DE INPUT A PARTIR DE ARQUIVOS (ISSO FOI COMPLICADO PRA CARAMBA)
+    /*
+    public void CadastrarAluno(String nomeAluno, int matriculaAluno) {
+        try {
+            Aluno aluno = new Aluno(matriculaAluno, nomeAluno);
+            alunos.adicionar(aluno);
+            System.out.println("Aluno " + nomeAluno + " cadastrado com sucesso!");
+        } catch (Exception e) {
+            System.out.println("Erro ao cadastrar aluno!");
+        }
+    }
+
+    public void CadastrarDisciplina(String nomeDisciplina, int horaDisciplina, int codigoDisciplina) {
+        try {
+            Disciplina disciplina = new Disciplina(codigoDisciplina, nomeDisciplina, horaDisciplina);
+            disciplinas.adicionar(disciplina);
+            System.out.println("Disciplina " + nomeDisciplina + " cadastrada com sucesso!");
+        } catch (Exception e) {
+            System.out.println("Erro ao preencher os dados.");
+        }
+    }
+
+    public void CadastrarPreRequisito(int codDisciplina, int codPreRequisito) {
+        try {
+            Disciplina disciplinaEscolhida = disciplinas.pesquisar(new Disciplina(codDisciplina, "", 0));
+            Disciplina preRequisito = disciplinas.pesquisar(new Disciplina(codPreRequisito, "", 0));
+            if (disciplinaEscolhida != null && preRequisito != null) {
+                if (disciplinaEscolhida.getPreRequisitos().contains(preRequisito)) {
+                    System.out.println("A disciplina escolhida já possui esse pré-requisito!");
+                } else {
+                    disciplinaEscolhida.addPreRequisito(preRequisito);
+                    System.out.println("Pré-requisito cadastrado com sucesso");
+                }
+            } else {
+                System.out.println("Disciplina ou pré-requisito não encontrados.");
+            }
+        } catch (Exception e) {
+            System.out.println("Erro ao adicionar pré-requisito.");
+        }
+    }
+
+    public void DisciplinasCursadas(int matricula, int codigoDisciplina) {
+        try {
+            Aluno aluno = new Aluno(matricula, ""); // Criando um objeto aluno apenas com a matrícula para pesquisa
+            Disciplina disciplina = new Disciplina(codigoDisciplina, "", 0); // Criando um objeto disciplina apenas com o código para pesquisa
+            Aluno alunoEncontrado = alunos.pesquisar(aluno);
+            Disciplina disciplinaEncontrada = disciplinas.pesquisar(disciplina);
+            if (alunoEncontrado != null && disciplinaEncontrada != null) {
+                boolean cursouPreRequisitos = true;
+                // Verifica se o aluno cursou todos os pré-requisitos da disciplina
+                for (Disciplina preRequisito : disciplinaEncontrada.getPreRequisitos()) {
+                    boolean cursouPreRequisito = false;
+                    for (Disciplina disciplinaCursada : alunoEncontrado.getDiscCursadas()) {
+                        if (disciplinaCursada.equals(preRequisito)) {
+                            cursouPreRequisito = true;
+                            break;
+                        }
+                    }
+                    if (!cursouPreRequisito) {
+                        cursouPreRequisitos = false;
+                        System.out.println("O aluno não cursou o pré-requisito: " + preRequisito.getNome());
+                    }
+                }
+                // Se o aluno cursou todos os pré-requisitos, registra que ele cursou a disciplina
+                if (cursouPreRequisitos) {
+                    alunoEncontrado.addDiscCursada(disciplinaEncontrada);
+                    System.out.println("Disciplina adicionada às disciplinas cursadas pelo aluno.");
+                }
+            } else {
+                System.out.println("Aluno ou disciplina não encontrados.");
+            }
+        } catch (Exception e) {
+            System.out.println("Erro ao registrar disciplinas cursadas.");
+        }
+    }
+
+    public void ConsultarAlunoPorNome(String nomeAluno) {
+        Stack<Aluno> resultado = new Stack<>();
+        alunos.emOrdem(new NoVisitor<Aluno>() {
+            @Override
+            public void visit(Aluno aluno) {
+                if (aluno.getNome().equalsIgnoreCase(nomeAluno)) {
+                    resultado.add(aluno);
+                }
+            }
+        });
+        if (resultado.isEmpty()) {
+            System.out.println("Aluno não encontrado.");
+        } else {
+            for (Aluno aluno : resultado) {
+                System.out.println("Matrícula: " + aluno.getMatricula());
+                System.out.println("Nome: " + aluno.getNome());
+                System.out.println("Disciplinas Cursadas: ");
+                for (Disciplina disciplina : aluno.getDiscCursadas()) {
+                    System.out.println(disciplina);
+                }
+            }
+        }
+    }
+
+    public void ConsultarAlunoPorMatricula(int matriculaAluno) {
+        Aluno aluno = alunos.pesquisar(new Aluno(matriculaAluno, ""));
+        if (aluno == null) {
+            System.out.println("Aluno não encontrado.");
+        } else {
+            System.out.println("Matrícula: " + aluno.getMatricula());
+            System.out.println("Nome: " + aluno.getNome());
+            System.out.println("Disciplinas Cursadas: ");
+            for (Disciplina disciplina : aluno.getDiscCursadas()) {
+                System.out.println(disciplina);
+            }
+        }
+    }
+
+    public void RemoverAluno(int matRemAluno) {
+        Aluno alunoRemover = alunos.pesquisar(new Aluno(matRemAluno, ""));
+        if (alunoRemover != null) {
+            alunos.remover(alunoRemover);
+            System.out.println("Aluno removido com sucesso!");
+        } else {
+            System.out.println("Aluno não encontrado.");
+        }
+    }
+
+    public void processarArquivoDeInput(String caminhoArquivo) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(caminhoArquivo))) {
+            String linha;
+            while ((linha = reader.readLine()) != null) {
+                int opcao = Integer.parseInt(linha);
+                switch (opcao) {
+                    case 1:
+                        String nomeAluno = reader.readLine();
+                        int matriculaAluno = Integer.parseInt(reader.readLine());
+                        CadastrarAluno(nomeAluno, matriculaAluno);
+                        break;
+                    case 2:
+                        String nomeDisciplina = reader.readLine();
+                        int cargaHoraria = Integer.parseInt(reader.readLine());
+                        int codigoDisciplina = Integer.parseInt(reader.readLine());
+                        CadastrarDisciplina(nomeDisciplina, cargaHoraria, codigoDisciplina);
+                        break;
+                    case 3:
+                        int codigoDisc = Integer.parseInt(reader.readLine());
+                        int codigoPreReq = Integer.parseInt(reader.readLine());
+                        CadastrarPreRequisito(codigoDisc, codigoPreReq);
+                        break;
+                    case 4:
+                        int matricula = Integer.parseInt(reader.readLine());
+                        codigoDisc = Integer.parseInt(reader.readLine());
+                        DisciplinasCursadas(matricula, codigoDisc);
+                        break;
+                    case 5:
+                        String nomeConsulta = reader.readLine();
+                        ConsultarAlunoPorNome(nomeConsulta);
+                        break;
+                    case 6:
+                        int matriculaConsulta = Integer.parseInt(reader.readLine());
+                        ConsultarAlunoPorMatricula(matriculaConsulta);
+                        break;
+                    case 7:
+                        int matriculaRemocao = Integer.parseInt(reader.readLine());
+                        RemoverAluno(matriculaRemocao);
+                        break;
+                    default:
+                        System.out.println("Opção inválida no arquivo de input: " + opcao);
+                        break;
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Erro ao ler o arquivo de input: " + e.getMessage());
+        }
+    }
+
+    public void menu() {
+        while (true) {
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("1 - Cadastrar aluno");
+            System.out.println("2 - Cadastrar disciplina");
+            System.out.println("3 - Cadastrar pré-requisito");
+            System.out.println("4 - Disciplinas cursadas");
+            System.out.println("5 - Consultar aluno por nome");
+            System.out.println("6 - Consultar aluno por matrícula");
+            System.out.println("7 - Remover aluno");
+            System.out.println("8 - Ler arquivo de input");
+            System.out.println("9 - Sair");
+            int opcao = scanner.nextInt();
+
+            switch (opcao) {
+                case 1:
+                    CadastrarAluno();
+                    break;
+                case 2:
+                    CadastrarDisciplina();
+                    break;
+                case 3:
+                    CadastrarPreRequisito();
+                    break;
+                case 4:
+                    disciplinasCursadas();
+                    break;
+                case 5:
+                    consultarAlunoPorNome();
+                    break;
+                case 6:
+                    consultarAlunoPorMatricula();
+                    break;
+                case 7:
+                    removerAluno();
+                    break;
+                case 8:
+                    System.out.println("Digite o caminho do arquivo de input:");
+                    String caminhoArquivo = scanner.next();
+                    processarArquivoDeInput(caminhoArquivo);
+                    break;
+                case 9:
+                    System.out.println("Encerrando sistema.");
+                    return;
+                default:
+                    System.out.println("Opção inválida!");
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        Aplicativo app = new Aplicativo();
+        app.processarArquivoDeInput("C:\\Users\\thalison.ribeiro\\Desktop\\tpateste-main\\Trabalho1TPA-main (1)\\Trabalho1TPA-main\\ArvoreBinaria\\src\\app\\input.txt");
+        app.menu();
+    }
+}*/
