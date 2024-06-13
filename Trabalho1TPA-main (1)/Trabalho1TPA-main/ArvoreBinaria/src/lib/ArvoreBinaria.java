@@ -243,6 +243,19 @@ public class ArvoreBinaria<T> implements IArvoreBinaria<T> {
         caminharEmOrdemRecursivo(no.getFilhoDireita(), resultado);
     }
 
+    public void emOrdem(NoVisitor<T> visitor) {
+        emOrdemRecursivo(raiz, visitor);
+    }
+
+    private void emOrdemRecursivo(No<T> no, NoVisitor<T> visitor) {
+        if (no == null) {
+            return;
+        }
+        emOrdemRecursivo(no.getFilhoEsquerda(), visitor);
+        visitor.visit(no.getValor());
+        emOrdemRecursivo(no.getFilhoDireita(), visitor);
+    }
+
     public No<T> getRaiz() {
         return raiz;
     }
