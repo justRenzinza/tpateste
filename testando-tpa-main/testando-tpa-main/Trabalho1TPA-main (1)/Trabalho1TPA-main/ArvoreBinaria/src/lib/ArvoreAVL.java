@@ -25,11 +25,11 @@ public class ArvoreAVL<T> extends ArvoreBinaria<T> {
         } else if (comparacao > 0) {
             noAtual.setFilhoDireita(adicionarRecursivamente(noAtual.getFilhoDireita(), novoValor));
         } else {
-            System.out.println("Valor duplicado");
-            return noAtual;
+            // Valor duplicado
+            return balancear(noAtual);
         }
 
-        atualizarAlturaEVerificarBalanceamento(noAtual);
+        noAtual.setAltura(1 + Math.max(altura(noAtual.getFilhoEsquerda()), altura(noAtual.getFilhoDireita())));
         return balancear(noAtual);
     }
 
@@ -39,7 +39,7 @@ public class ArvoreAVL<T> extends ArvoreBinaria<T> {
         return valor;
     }
 
-    public No<T> removerRecursivo(No<T> no, T valor) {
+    private No<T> removerRecursivo(No<T> no, T valor) {
         if (no == null) {
             return no;
         }
@@ -51,24 +51,24 @@ public class ArvoreAVL<T> extends ArvoreBinaria<T> {
         } else if (comparacao > 0) {
             no.setFilhoDireita(removerRecursivo(no.getFilhoDireita(), valor));
         } else {
-            if (no.getFilhoEsquerda() == null) {
-                return no.getFilhoDireita();
-            } else if (no.getFilhoDireita() == null) {
-                return no.getFilhoEsquerda();
+            if (no.getFilhoEsquerda() == null || no.getFilhoDireita() == null) {
+                no = (no.getFilhoEsquerda() != null) ? no.getFilhoEsquerda() : no.getFilhoDireita();
+            } else {
+                No<T> temp = encontrarMinimo(no.getFilhoDireita());
+                no.setValor(temp.getValor());
+                no.setFilhoDireita(removerRecursivo(no.getFilhoDireita(), temp.getValor()));
             }
-
-            no.setValor(encontrarMinimo(no.getFilhoDireita()).getValor());
-            no.setFilhoDireita(removerRecursivo(no.getFilhoDireita(), no.getValor()));
         }
 
-        atualizarAlturaEVerificarBalanceamento(no);
+        if (no == null) {
+            return no;
+        }
+
+        no.setAltura(1 + Math.max(altura(no.getFilhoEsquerda()), altura(no.getFilhoDireita())));
         return balancear(no);
     }
 
     private No<T> encontrarMinimo(No<T> no) {
-        if (no == null) {
-            return null;
-        }
         while (no.getFilhoEsquerda() != null) {
             no = no.getFilhoEsquerda();
         }
@@ -76,22 +76,11 @@ public class ArvoreAVL<T> extends ArvoreBinaria<T> {
     }
 
     private int altura(No<T> no) {
-        return no == null ? -1 : no.getAltura();
-    }
-
-    private void atualizarAlturaEVerificarBalanceamento(No<T> no) {
-        if (no != null) {
-            int alturaEsquerda = altura(no.getFilhoEsquerda());
-            int alturaDireita = altura(no.getFilhoDireita());
-            no.setAltura(1 + Math.max(alturaEsquerda, alturaDireita));
-        }
+        return (no == null) ? 0 : no.getAltura(); // Altura de um nó nulo é 0
     }
 
     private int fatorDeEquilibrio(No<T> no) {
-        if (no == null) {
-            return 0;
-        }
-        return altura(no.getFilhoEsquerda()) - altura(no.getFilhoDireita());
+        return (no == null) ? 0 : altura(no.getFilhoEsquerda()) - altura(no.getFilhoDireita());
     }
 
     private No<T> balancear(No<T> no) {

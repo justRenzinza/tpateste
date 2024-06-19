@@ -116,7 +116,7 @@ public class ArvoreBinaria<T> implements IArvoreBinaria<T> {
         return valor;
     }
 
-    public No<T> removerRecursivo(No <T> no, T valor){
+    private No<T> removerRecursivo(No <T> no, T valor){
         // caso não tenha nenhum nó na arvore, importante fazer essa verificação
         if (no == null){
             return no;
@@ -161,8 +161,8 @@ public class ArvoreBinaria<T> implements IArvoreBinaria<T> {
 
         Stack<No<T>> pilha = new Stack<>();
         Stack<Integer> alturas = new Stack<>();
-        int alturaMaxima = -1;
-        int alturaAtual = 0;
+        int alturaMaxima = 0;       // parte que eu fiquei 6h pra descobrir que aqui era o problema
+        int alturaAtual = -1;       // o alturaAtual tava como 1 e não pode pq a raiz não conta
         No<T> noAtual = raiz;
 
         while (noAtual != null || !pilha.isEmpty()) {

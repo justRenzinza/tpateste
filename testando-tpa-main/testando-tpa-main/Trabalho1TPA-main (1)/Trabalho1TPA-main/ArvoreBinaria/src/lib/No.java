@@ -19,9 +19,9 @@ public class No<T> {
 
     public No(T valor){
         this.valor = valor;
-        this.filhoDireita = null;
-        this.filhoEsquerda = null;
-        this.altura = -1;            // vamos inicializar a altura como 0
+        // this.filhoDireita = null;
+        // this.filhoEsquerda = null;
+        this.altura = 1;            // vamos inicializar a altura como -1
     }
     
     /**

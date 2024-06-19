@@ -5,9 +5,7 @@
  */
 package app;
 //Lembre-se de ajustar os imports!!!!!
-import lib.ArvoreAVL;
-import lib.ArvoreBinaria;
-import lib.IArvoreBinaria;
+import lib.*;
 
 /**
  *
