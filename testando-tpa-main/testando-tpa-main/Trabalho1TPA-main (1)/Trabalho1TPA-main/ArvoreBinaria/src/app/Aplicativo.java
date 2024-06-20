@@ -17,6 +17,14 @@ public class Aplicativo {
             String nomeAluno = cadAluno.nextLine();
             System.out.println("Digite a matrícula do aluno: ");
             int matriculaAluno = cadAluno.nextInt();
+
+            // Verifica se o aluno já está cadastrado
+            Aluno alunoExistente = alunos.pesquisar(new Aluno(matriculaAluno, nomeAluno));
+            if (alunoExistente != null) {
+                System.out.println("Erro: Aluno já cadastrado!");
+                return;
+            }
+
             Aluno aluno = new Aluno(matriculaAluno, nomeAluno);
             alunos.adicionar(aluno);
             System.out.println("Aluno " + nomeAluno + " cadastrado com sucesso!");
@@ -24,6 +32,7 @@ public class Aplicativo {
             System.out.println("Erro ao cadastrar aluno!");
         }
     }
+
 
     public void cadastrarDisciplina() {
         Scanner cadDisciplina = new Scanner(System.in);
@@ -34,12 +43,33 @@ public class Aplicativo {
             int horaDisciplina = cadDisciplina.nextInt();
             System.out.println("Digite o código da disciplina:");
             int codigoDisciplina = cadDisciplina.nextInt();
+
+            // Verifica se a disciplina já está cadastrada
+            Disciplina disciplinaExistente = disciplinas.pesquisar(new Disciplina(codigoDisciplina, "", 0));
+            if (disciplinaExistente != null) {
+                System.out.println("Erro: Disciplina já cadastrada!");
+                return;
+            }
+
             Disciplina disciplina = new Disciplina(codigoDisciplina, nomeDisciplina, horaDisciplina);
             disciplinas.adicionar(disciplina);
             System.out.println("Disciplina " + nomeDisciplina + " cadastrada com sucesso!");
         } catch (Exception e) {
             System.out.println("Erro ao preencher os dados.");
         }
+    }
+
+
+    private boolean haCiclo(Disciplina disciplina, Disciplina preRequisito) {
+        if (disciplina.equals(preRequisito)) {
+            return true;
+        }
+        for (Disciplina pre : preRequisito.getPreRequisitos()) {
+            if (haCiclo(disciplina, pre)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void cadastrarPreRequisito() {
@@ -72,15 +102,22 @@ public class Aplicativo {
                         System.out.println("A disciplina pré-requisito não foi encontrada. Por favor, insira um código válido.");
                     }
                 }
-                if (disciplinaEscolhida != null && preRequisito != null) {
-                    if (disciplinaEscolhida.getPreRequisitos().contains(preRequisito)) {
-                        System.out.println("A disciplina escolhida já possui esse pré-requisito!");
-                    } else {
-                        disciplinaEscolhida.adicionarPreRequisito(preRequisito);
-                        System.out.println("Pré-requisito cadastrado com sucesso");
-                        return;
-                    }
+
+                // Verifica se o pré-requisito já está cadastrado
+                if (disciplinaEscolhida.getPreRequisitos().contains(preRequisito)) {
+                    System.out.println("Erro: A disciplina já possui esse pré-requisito!");
+                    return;
                 }
+
+                // Verifica se há um ciclo de pré-requisitos
+                if (haCiclo(disciplinaEscolhida, preRequisito)) {
+                    System.out.println("Erro: Não é possível adicionar o pré-requisito devido a um ciclo de pré-requisitos!");
+                    return;
+                }
+
+                disciplinaEscolhida.adicionarPreRequisito(preRequisito);
+                System.out.println("Pré-requisito cadastrado com sucesso");
+                return;
             } catch (Exception e) {
                 System.out.println("Erro ao adicionar pré-requisito. Deseja tentar novamente? (s/n)");
                 if (disciplinaScanner.next().equalsIgnoreCase("n")) {
@@ -89,6 +126,7 @@ public class Aplicativo {
             }
         }
     }
+
 
     public void disciplinasCursadas() {
         Scanner scanner = new Scanner(System.in);
